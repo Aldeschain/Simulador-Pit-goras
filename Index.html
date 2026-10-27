@@ -1,0 +1,69 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Laboratorio Pitágoras | Bennett</title><style>:root{font-family:Inter,system-ui,Arial,sans-serif;color:#eaf2ff;background:#080f23}*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 85% 0%,#1c3974 0%,#080f23 45%);min-height:100vh}.wrap{max-width:1050px;margin:auto;padding:30px 18px}header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.brand{letter-spacing:.15em;color:#78d9ff;font-size:12px;font-weight:800}.pill{border:1px solid #3d598a;border-radius:30px;padding:8px 13px;color:#c7d8fa;font-size:12px}h1{font-size:clamp(30px,5vw,54px);margin:24px 0 5px;letter-spacing:-.05em}h1 span{color:#65dcff}.sub{color:#aebfdf;margin-bottom:26px}.levels{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}.level{background:#12213f;border:1px solid #2b416c;color:#dceaff;border-radius:14px;padding:15px 10px;text-align:left;cursor:pointer}.level strong{display:block;font-size:14px}.level small{display:block;margin-top:5px;color:#9fb4d8}.level.active{border-color:#59d6ff;background:#1b3863;box-shadow:inset 0 0 0 1px #59d6ff}.layout{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;margin-top:18px}.panel{background:#101d36;border:1px solid #2b4065;border-radius:20px;padding:24px}.eyebrow{font-size:12px;font-weight:800;letter-spacing:.12em;color:#67d9ff;text-transform:uppercase}.scenario{font-size:19px;line-height:1.5;min-height:115px}.diagram{width:100%;max-height:275px}.diagram text{fill:#e9f3ff;font-size:17px;font-weight:700}.formlabel{display:block;font-size:14px;margin:16px 0 8px;color:#c8d7f0}input{background:#07132a;border:1px solid #4a6592;border-radius:11px;color:white;font-size:19px;padding:13px;width:100%}button{font:inherit}.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:13px}.primary,.secondary{border-radius:10px;padding:12px 17px;font-weight:750;cursor:pointer}.primary{background:#5ad7fb;color:#06172b;border:0}.secondary{background:#1b2c4e;color:#e7f2ff;border:1px solid #405b86}.feedback{min-height:28px;margin-top:14px;font-weight:650}.ok{color:#79efbb}.bad{color:#ffb8ac}.solution{display:none;margin-top:15px;border-top:1px solid #354b71;padding-top:15px;line-height:1.8;color:#d8e8ff}.stats{display:flex;gap:12px;flex-wrap:wrap;color:#b7c8e6;font-size:13px;margin-top:16px}.stats b{color:#7fe3ff}.note{font-size:13px;color:#9bb0d3;margin-top:18px}footer{font-size:12px;color:#839bc1;margin-top:25px;text-align:center}@media(max-width:760px){.levels{grid-template-columns:repeat(2,1fr)}.layout{grid-template-columns:1fr}.panel{padding:18px}} .diagramHint{font-size:13px;color:#a9c5e6;margin:5px 0 12px}.diagram{background:#09162d;border:1px solid #30486f;border-radius:14px} </style></head><body><div class="wrap"><header><div class="brand">BENNETT · LABORATORIO MATEMÁTICO</div><div class="pill">SIMULADOR INTERACTIVO · PITÁGORAS</div></header><h1>Explora el <span>triángulo rectángulo</span></h1><p class="sub">Resuelve situaciones reales, comprueba tus respuestas y descubre el procedimiento.</p><div class="levels" id="levels"></div><div class="layout"><section class="panel"><div class="eyebrow" id="tag"></div><h2 id="title">Situación problema</h2><p class="scenario" id="story"></p><div class="diagramHint" id="visualHint">Identifica el triángulo rectángulo dentro de la figura.</div><svg class="diagram" id="diagram" viewBox="0 0 460 275" role="img" aria-label="Representación geométrica del problema"></svg><div class="stats"><span>Resueltos: <b id="count">0</b></span><span>Aciertos: <b id="hits">0</b></span><span>Racha: <b id="streak">0</b></span></div></section><section class="panel"><div class="eyebrow">Tu respuesta</div><h2>Calcula el lado desconocido</h2><div id="instruction" class="note"></div><label class="formlabel" for="answer">Valor del lado (en las unidades indicadas)</label><input id="answer" type="text" inputmode="decimal" autocomplete="off" placeholder="Escribe tu resultado"/><div class="actions"><button class="primary" id="check">Comprobar</button><button class="secondary" id="next">Nuevo problema ↗</button><button class="secondary" id="show">Ver solución</button></div><div id="feedback" class="feedback" aria-live="polite"></div><div id="solution" class="solution"></div><p class="note">En raíces inexactas, escribe el resultado redondeado a dos decimales. Puedes usar coma o punto decimal.</p></section></div><footer>Departamento de Matemáticas · Colegio Bennett · Herramienta de práctica autónoma</footer></div><script>
+const $=id=>document.getElementById(id);
+const labels=[['01 · Exploración','Hipotenusa exacta'],['02 · Aplicación','Hipotenusa inexacta'],['03 · Desafío','Cateto exacto'],['04 · Experto','Cateto inexacto']];
+let level=0,p=null,attempted=false,solved=0,hits=0,streak=0;
+const rand=(a,b)=>Math.floor(Math.random()*(b-a+1))+a;
+const fmt=n=>Number.isInteger(n)?String(n):n.toFixed(2).replace('.',',');
+const perfect=n=>Number.isInteger(Math.sqrt(n));
+const configs=[
+ {id:'rectangle',name:'Diagonal de un rectángulo',story:x=>`Un terreno rectangular tiene ${fmt(x.a)} m de ancho y ${fmt(x.b)} m de largo. ¿Cuánto mide su diagonal?`,cat:x=>`La diagonal de un terreno rectangular mide ${fmt(x.c)} m y su ancho es ${fmt(x.a)} m. ¿Cuál es su largo?`},
+ {id:'ladder',name:'Escalera contra una pared',story:x=>`Una escalera alcanza ${fmt(x.b)} m de altura y su base se encuentra a ${fmt(x.a)} m de una pared. ¿Qué longitud tiene la escalera?`,cat:x=>`Una escalera de ${fmt(x.c)} m tiene su base a ${fmt(x.a)} m de la pared. ¿A qué altura llega?`},
+ {id:'isosceles',name:'Altura de un triángulo isósceles',story:x=>`En un triángulo isósceles, la altura es ${fmt(x.b)} cm y la mitad de la base mide ${fmt(x.a)} cm. ¿Cuánto mide cada lado igual?`,cat:x=>`Los lados iguales de un triángulo isósceles miden ${fmt(x.c)} cm y la mitad de su base mide ${fmt(x.a)} cm. ¿Cuánto mide su altura?`},
+ {id:'rhombus',name:'Diagonales de un rombo',story:x=>`Las semidiagonales de un rombo miden ${fmt(x.a)} cm y ${fmt(x.b)} cm. ¿Cuánto mide un lado del rombo?`,cat:x=>`Un rombo tiene lados de ${fmt(x.c)} cm y una semidiagonal de ${fmt(x.a)} cm. ¿Cuánto mide la otra semidiagonal?`},
+ {id:'ramp',name:'Rampa de acceso',story:x=>`Una rampa salva una altura de ${fmt(x.b)} m y ocupa ${fmt(x.a)} m horizontalmente. ¿Cuánto mide su superficie inclinada?`,cat:x=>`Una rampa tiene ${fmt(x.c)} m de longitud inclinada y una proyección horizontal de ${fmt(x.a)} m. ¿Qué altura alcanza?`},
+ {id:'coordinate',name:'Desplazamiento en el plano',story:x=>`Un robot se mueve ${fmt(x.a)} m hacia el este y ${fmt(x.b)} m hacia el norte. ¿Qué distancia en línea recta hay entre su punto inicial y final?`,cat:x=>`La distancia recta entre el inicio y el final de un recorrido es ${fmt(x.c)} m. Si el desplazamiento horizontal fue de ${fmt(x.a)} m, ¿cuánto fue el vertical?`},
+ {id:'pole',name:'Poste y cable tensor',story:x=>`Un cable se fija al suelo a ${fmt(x.a)} m de un poste y se sujeta a ${fmt(x.b)} m de altura. ¿Cuánto mide el cable?`,cat:x=>`Un cable de ${fmt(x.c)} m está sujeto a un poste y anclado a ${fmt(x.a)} m de su base. ¿A qué altura se fija?`}
+];
+// El radicando no supera 900. En su factorización prima no aparece
+// ningún primo mayor que 29 y el factor 29 aparece como máximo una vez.
+function validRadicand(n){
+ if(!Number.isInteger(n)||n<1||n>900)return false;
+ let rest=n;
+ for(const prime of [2,3,5,7,11,13,17,19,23,29]){
+  let count=0;
+  while(rest%prime===0){rest/=prime;count++;}
+  if(prime===29&&count>1)return false;
+ }
+ return rest===1;
+}
+const pools=Array.from({length:4},()=>[]);
+for(let a=2;a<=30;a++)for(let b=2;b<=30;b++){
+ const n=a*a+b*b;
+ if(validRadicand(n)){
+  const c=Math.sqrt(n);
+  if(Number.isInteger(c))pools[0].push({a,b,c});
+  else pools[1].push({a,b,c});
+ }
+}
+for(let c=3;c<=30;c++)for(let a=2;a<c;a++){
+ const n=c*c-a*a;
+ if(validRadicand(n)){
+  const b=Math.sqrt(n);
+  if(Number.isInteger(b))pools[2].push({a,b,c});
+  else pools[3].push({a,b,c});
+ }
+}
+function choose(){
+ const pool=pools[level],data=pool[rand(0,pool.length-1)];
+ return {...data,radicand:level<2?data.a*data.a+data.b*data.b:data.c*data.c-data.a*data.a,
+ unknown:level<2?'c':'b',config:configs[rand(0,configs.length-1)]};
+}
+const T=(x,y,v,anchor='middle')=>`<text x="${x}" y="${y}" text-anchor="${anchor}" fill="#f0f6ff" font-size="15" font-weight="700">${v}</text>`;
+const line=(x1,y1,x2,y2,dash=false,color='#69dfff',w=3)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${color}" stroke-width="${w}" ${dash?'stroke-dasharray="7 6"':''}/>`;
+const path=(d,color='#69dfff',fill='none',w=3)=>`<path d="${d}" fill="${fill}" stroke="${color}" stroke-width="${w}" stroke-linejoin="round"/>`;
+function draw(x){const a=fmt(x.a),b=x.unknown==='b'?'?':fmt(x.b),c=x.unknown==='c'?'?':fmt(x.c),id=x.config.id;const unit=['isosceles','rhombus'].includes(id)?'cm':'m';let g='';
+ if(id==='rectangle'){g=path('M90 55 H360 V220 H90 Z','#8a9ec4','rgba(60,150,240,.09)')+line(90,220,360,55,true)+T(225,245,a+' '+unit)+T(382,140,b+' '+unit)+T(210,128,c+' '+unit);}
+ if(id==='ladder'||id==='pole'){g=path('M70 25 V235 H390','#8a9ec4')+line(115,220,320,220,false,'#78efc4')+line(115,220,115,52,false,'#78efc4')+line(115,52,320,220,false,'#69dfff',5)+path('M115 200 H135 V220','#ffd276')+T(215,245,a+' '+unit)+T(75,135,b+' '+unit)+T(265,117,c+' '+unit);}
+ if(id==='isosceles'){g=path('M80 225 L230 35 L380 225 Z','#8da8cf','rgba(60,150,240,.09)')+line(230,35,230,225,true,'#78efc4')+path('M230 205 H250 V225','#ffd276')+T(302,138,c+' '+unit)+T(247,122,b+' '+unit,'start')+T(303,248,a+' '+unit);}
+ if(id==='rhombus'){g=path('M230 25 L390 137 L230 249 L70 137 Z','#8da8cf','rgba(60,150,240,.08)')+line(70,137,390,137,true,'#78efc4')+line(230,25,230,249,true,'#78efc4')+path('M230 137 H248 V119','#ffd276')+T(303,125,a+' '+unit)+T(251,78,b+' '+unit,'start')+T(328,68,c+' '+unit);}
+ if(id==='ramp'){g=path('M75 220 H375 V65 Z','#69dfff','rgba(60,150,240,.13)')+path('M355 220 V200 H375','#ffd276')+T(225,246,a+' '+unit)+T(396,150,b+' '+unit)+T(205,119,c+' '+unit);}
+ if(id==='coordinate'){g=line(60,225,415,225,false,'#607ba7',2)+line(75,252,75,20,false,'#607ba7',2)+path('M110 215 H350 V55','#78efc4')+line(110,215,350,55,true)+path('M330 215 V195 H350','#ffd276')+T(230,240,a+' '+unit)+T(380,138,b+' '+unit)+T(230,110,c+' '+unit);}
+ $('diagram').innerHTML=g;$('diagram').setAttribute('aria-label',x.config.name+'. Dos medidas conocidas y una incógnita señalada con interrogación.');
+}
+function renderLevels(){$('levels').innerHTML=labels.map((v,i)=>`<button class="level ${i===level?'active':''}" data-level="${i}"><strong>${v[0]}</strong><small>${v[1]}</small></button>`).join('');document.querySelectorAll('[data-level]').forEach(el=>el.onclick=()=>{level=+el.dataset.level;renderLevels();newProblem()});}
+function newProblem(){p=choose();attempted=false;$('tag').textContent=`Nivel ${level+1} de 4 · Raíz ${level%2?'inexacta':'exacta'}`;$('title').textContent=p.config.name;$('story').textContent=p.unknown==='c'?p.config.story(p):p.config.cat(p);$('visualHint').textContent='Localiza el triángulo rectángulo. El radicando de la solución es como máximo 900 y sus factores primos no superan 29 (29 aparece a lo sumo una vez).';draw(p);$('instruction').textContent=p.unknown==='c'?'Identifica los dos catetos y calcula la hipotenusa: c² = a² + b².':'Identifica la hipotenusa y el cateto conocido: b² = c² − a².';$('answer').value='';$('feedback').textContent='';$('feedback').className='feedback';$('solution').style.display='none';}
+function feedback(t,good){$('feedback').textContent=t;$('feedback').className='feedback '+(good?'ok':'bad');}
+function check(){const raw=$('answer').value.trim();const val=Number(raw.replace(',','.'));if(!raw||!Number.isFinite(val)){feedback('Introduce un número válido.',false);return;}const target=p.unknown==='c'?p.c:p.b;const good=level%2===0?Math.abs(val-target)<1e-7:Math.abs(val-Number(target.toFixed(2)))<0.0051;if(!attempted){solved++;attempted=true;if(good){hits++;streak++;}else streak=0;$('count').textContent=solved;$('hits').textContent=hits;$('streak').textContent=streak;}feedback(good?'¡Correcto! Identificaste la relación pitagórica.':'Revisa los lados identificados y la operación; inténtalo de nuevo.',good);}
+function show(){const q=p.unknown==='c'?p.a*p.a+p.b*p.b:p.c*p.c-p.a*p.a;const target=p.unknown==='c'?p.c:p.b;const formula=p.unknown==='c'?`c² = ${p.a}² + ${p.b}²`:`b² = ${p.c}² − ${p.a}²`;const result=Number.isInteger(target)?fmt(target):fmt(Number(target.toFixed(2)));$('solution').innerHTML=`<strong>Identificación:</strong> ${p.unknown==='c'?'La diagonal o lado inclinado es la hipotenusa.':'El segmento buscado es un cateto; el lado mayor es la hipotenusa.'}<br><strong>Procedimiento:</strong><br>${formula}<br>${p.unknown}² = ${q}<br>${p.unknown} = √${q} ${Number.isInteger(target)?'=':'≈'} <strong>${result} ${['isosceles','rhombus'].includes(p.config.id)?'cm':'m'}</strong>`;$('solution').style.display='block';}
+$('check').onclick=check;$('next').onclick=newProblem;$('show').onclick=show;$('answer').addEventListener('keydown',e=>{if(e.key==='Enter')check();});renderLevels();newProblem();
+</script></body></html>
